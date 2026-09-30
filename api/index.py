@@ -131,3 +131,7 @@ async def edit_pdf(
       media_type="application/pdf",
       headers={"Content-Disposition": "attachment; filename=modified.pdf"},
   )
+  
+ @app.get("/api/health")
+def health_check():
+  return {"status": "PDF Editor API is running"}
