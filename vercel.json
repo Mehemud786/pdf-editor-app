@@ -1,17 +1,15 @@
 {
   "version": 2,
-  "services": {
-    "api": {
-      "root": ".",
-      "entrypoint": "Dockerfile.vercel"
-    }
-  },
-  "rewrites": [
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": {
-        "service": "api"
-      }
+      "src": "main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "main.py"
     }
   ]
 }

@@ -21,7 +21,7 @@ def read_root():
         <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 border border-slate-100">
             <div class="text-center mb-6">
                 <h1 class="text-2xl font-bold text-slate-800">PDF Text Editor</h1>
-                <p class="text-slate-500 text-sm mt-1">Search, replace text, and export your PDF instantly</p>
+                <p class="text-slate-500 text-sm mt-1">Search, replace text, and download your PDF</p>
             </div>
             
             <form id="pdfForm" class="space-y-4">
@@ -83,7 +83,6 @@ def read_root():
 
                     if (!response.ok) throw new Error('Failed to process PDF file');
 
-                    // Convert response stream into a downloadable file blob
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
