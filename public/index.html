@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF Text Editor - Vercel</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        input, button { display: block; margin: 15px 0; padding: 10px; width: 100%; }
+    </style>
+</head>
+<body>
+    <h2>PDF Text Changer & Editor</h2>
+    <input type="file" id="pdfFile" accept="application/pdf">
+    <input type="text" id="replaceText" placeholder="Enter new replacement text">
+    <button onclick="processPDF()">Update & Download PDF</button>
+
+    <script>
+        async function processPDF() {
+            const fileInput = document.getElementById('pdfFile');
+            const replaceText = document.getElementById('replaceText').value;
+
+            if (fileInput.files.length === 0) {
+                alert('Please select a PDF file first.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function() {
+                const base64String = reader.result.split(',')[1];
+
+                const response = await fetch('/api/edit-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pdfBase64: base64String, replaceText })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    // Convert back and trigger browser download
+                    const blob = b64toBlob(result.pdfBase64, 'application/pdf');
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = 'modified.pdf';
+                    link.click();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function b64toBlob(b64Data, contentType='') {
+            const byteCharacters = atob(b64Data);
+            const byteArrays = [];
+            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                const slice = byteCharacters.slice(offset, offset + 512);
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                byteArrays.push(new Uint8Array(byteNumbers));
+            }
+            return new Blob(byteArrays, {type: contentType});
+        }
+    </script>
+</body>
+</html>
