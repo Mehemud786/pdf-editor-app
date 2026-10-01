@@ -1,7 +1,14 @@
 {
-  "name": "pdf-editor-vercel",
+  "name": "pdf-text-editor",
   "version": "1.0.0",
+  "description": "Simple PDF text manual editing web app on Vercel",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js"
+  },
   "dependencies": {
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
     "pdf-lib": "^1.17.1"
   }
 }

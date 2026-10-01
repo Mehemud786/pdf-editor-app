@@ -1,69 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>PDF Text Editor - Vercel</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
-        input, button { display: block; margin: 15px 0; padding: 10px; width: 100%; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple PDF Manual Text Editor</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f4f9; color: #333; }
+    header { text-align: center; margin-bottom: 20px; }
+    .container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+    .controls, .editor-workspace { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 800px; }
+    #canvas-container { position: relative; display: inline-block; margin-top: 10px; border: 1px solid #ccc; overflow: auto; max-width: 100%; }
+    canvas { display: block; cursor: crosshair; }
+    .edit-list { margin-top: 15px; max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; }
+    button { background: #0070f3; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #0051a2; }
+    input, select { padding: 8px; margin: 5px 0; width: calc(100% - 18px); }
+  </style>
 </head>
 <body>
-    <h2>PDF Text Changer & Editor</h2>
-    <input type="file" id="pdfFile" accept="application/pdf">
-    <input type="text" id="replaceText" placeholder="Enter new replacement text">
-    <button onclick="processPDF()">Update & Download PDF</button>
+  <header>
+    <h1>Manual PDF Text Editor</h1>
+    <p>Upload a PDF, click anywhere on the page to insert or mask text, then download your edited file.</p>
+  </header>
 
-    <script>
-        async function processPDF() {
-            const fileInput = document.getElementById('pdfFile');
-            const replaceText = document.getElementById('replaceText').value;
+  <div class="container">
+    <div class="controls">
+      <input type="file" id="pdfUpload" accept="application/pdf">
+      <div id="pageControls" style="display:none; margin-top:10px;">
+        <button id="prevPage">Previous Page</button>
+        <span>Page <span id="pageNum">1</span> of <span id="pageCount">0</span></span>
+        <button id="nextPage">Next Page</button>
+      </div>
+    </div>
 
-            if (fileInput.files.length === 0) {
-                alert('Please select a PDF file first.');
-                return;
-            }
+    <div class="editor-workspace" id="workspace" style="display:none;">
+      <h3>1. Configure Text to Insert</h3>
+      <label>Replacement Text:</label>
+      <input type="text" id="inputText" placeholder="Enter text to place...">
+      
+      <label>Font Size:</label>
+      <input type="number" id="fontSize" value="12">
 
-            const file = fileInput.files[0];
-            const reader = new FileReader();
+      <label><input type="checkbox" id="maskOriginal" checked> Cover background (White Box Mask)</label>
+      <p style="font-size: 12px; color: #666;">Click directly on the PDF preview below to stamp your text at that location.</p>
 
-            reader.onload = async function() {
-                const base64String = reader.result.split(',')[1];
+      <h3>2. Pending Edits Queue</h3>
+      <div class="edit-list" id="editList">No edits added yet.</div>
+      <br>
+      <button id="submitBtn" style="background: #28a745; width: 100%;">Generate & Download Modified PDF</button>
+    </div>
 
-                const response = await fetch('/api/edit-pdf', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ pdfBase64: base64String, replaceText })
-                });
+    <div id="canvas-container" style="display:none;">
+      <canvas id="pdfCanvas"></canvas>
+    </div>
+  </div>
 
-                const result = await response.json();
-                if (result.success) {
-                    // Convert back and trigger browser download
-                    const blob = b64toBlob(result.pdfBase64, 'application/pdf');
-                    const link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = 'modified.pdf';
-                    link.click();
-                } else {
-                    alert('Error: ' + result.error);
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function b64toBlob(b64Data, contentType='') {
-            const byteCharacters = atob(b64Data);
-            const byteArrays = [];
-            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-                const slice = byteCharacters.slice(offset, offset + 512);
-                const byteNumbers = new Array(slice.length);
-                for (let i = 0; i < slice.length; i++) {
-                    byteNumbers[i] = slice.charCodeAt(i);
-                }
-                byteArrays.push(new Uint8Array(byteNumbers));
-            }
-            return new Blob(byteArrays, {type: contentType});
-        }
-    </script>
+  <script src="app.js"></script>
 </body>
 </html>
